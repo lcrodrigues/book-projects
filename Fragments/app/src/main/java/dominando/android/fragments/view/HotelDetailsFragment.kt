@@ -27,6 +27,7 @@ class HotelDetailsFragment : Fragment(), HotelDetailsView {
     override fun showHotelDetails(hotel: Hotel) {
         this.hotel = hotel
         txtName.text = hotel.name
+        txtAddress.text = hotel.address
         rtbRating.rating = hotel.rating
     }
 

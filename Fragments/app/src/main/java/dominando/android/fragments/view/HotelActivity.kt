@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import androidx.appcompat.widget.SearchView
 import dominando.android.fragments.view.HotelFormFragment
 
@@ -88,14 +89,17 @@ class HotelActivity : AppCompatActivity(),
     }
 
     override fun onHotelClick(hotel: Hotel) {
-        /*if(isTablet()) {
+        if(isTablet()) {
             showDetailsFragment(hotel.id)
         } else {
             showDetailsActivity(hotel.id)
-        }*/
+        }
 
         showDetailsActivity(hotel.id)
     }
+
+    private fun isTablet() : Boolean = resources.getBoolean(R.bool.tablet)
+    private fun isSmartphone() : Boolean = resources.getBoolean(R.bool.smartphone)
 
     override fun onHotelsDeleted(hotels: List<Hotel>) {
 

@@ -21,7 +21,8 @@ class HotelListFragment : ListFragment(),
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        presenter.searchHotels("")
+        retainInstance = true
+        presenter.init()
         listView.onItemLongClickListener = this
     }
 
@@ -35,6 +36,12 @@ class HotelListFragment : ListFragment(),
         listAdapter = adapter
     }
 
+    override fun onListItemClick(l: ListView, v: View, position: Int, id: Long) {
+        super.onListItemClick(l, v, position, id)
+        val hotel = l.getItemAtPosition(position) as Hotel
+        presenter.selectHotel(hotel)
+    }
+
     override fun showHotelDetails(hotel: Hotel) {
         if (activity is OnHotelClickListener) {
             val listener = activity as OnHotelClickListener
@@ -42,10 +49,20 @@ class HotelListFragment : ListFragment(),
         }
     }
 
-    override fun onListItemClick(l: ListView, v: View, position: Int, id: Long) {
-        super.onListItemClick(l, v, position, id)
-        val hotel = l.getItemAtPosition(position) as Hotel
-        presenter.selectHotel(hotel)
+    override fun onItemLongClick(
+        parent: AdapterView<*>?,
+        view: View?,
+        position: Int,
+        id: Long
+    ): Boolean {
+        val consumed = (actionMode == null)
+        if (consumed) {
+            val hotel = parent?.getItemAtPosition(position) as Hotel
+            presenter.showDeleteMode()
+            presenter.selectHotel(hotel)
+        }
+
+        return consumed
     }
 
     override fun showDeleteMode() {
@@ -67,6 +84,13 @@ class HotelListFragment : ListFragment(),
         }
     }
 
+    override fun updateSelectionCountText(count: Int) {
+        view?.post {
+            actionMode?.title =
+                resources.getQuantityString(R.plurals.list_hotel_selected, count, count)
+        }
+    }
+
     override fun showSelectedHotels(hotels: List<Hotel>) {
         listView.post {
             for (i in 0 until listView.count) {
@@ -76,29 +100,6 @@ class HotelListFragment : ListFragment(),
                 }
             }
         }
-    }
-
-    override fun updateSelectionCountText(count: Int) {
-        view?.post {
-            actionMode?.title =
-                resources.getQuantityString(R.plurals.list_hotel_selected, count, count)
-        }
-    }
-
-    override fun onItemLongClick(
-        parent: AdapterView<*>?,
-        view: View?,
-        position: Int,
-        id: Long
-    ): Boolean {
-        val consumed = (actionMode == null)
-        if (consumed) {
-            val hotel = parent?.getItemAtPosition(position) as Hotel
-            presenter.showDeleteMode()
-            presenter.selectHotel(hotel)
-        }
-
-        return consumed
     }
 
     override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
@@ -118,13 +119,11 @@ class HotelListFragment : ListFragment(),
         return true
     }
 
-    override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
-        actionMode = null
-        presenter.hideDeleteMode()
-    }
+    override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean = false
 
     override fun onDestroyActionMode(mode: ActionMode?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        actionMode = null
+        presenter.hideDeleteMode()
     }
 
     fun search(text: String) {
